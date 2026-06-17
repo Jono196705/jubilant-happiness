@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UWB Light Control - Calibration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Top Navigation Menu */
+        .top-nav {
+            background: var(--dark);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .nav-brand i {
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-student {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            white-space: nowrap;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link i {
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Calibration Guide Styles */
+        .calibration-guide {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .guide-header {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .guide-header h2 {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .guide-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .guide-toggle:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .guide-content {
+            padding: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .guide-content.expanded {
+            max-height: 1000px;
+        }
+
+        .guide-section {
+            margin-bottom: 25px;
+        }
+
+        .guide-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .guide-section h3 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-section ol,
+        .guide-section ul {
+            color: rgba(255, 255, 255, 0.9);
+            margin-left: 20px;
+        }
+
+        .guide-section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .guide-section strong {
+            color: white;
+            font-weight: 600;
+        }
+
+
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h3 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+
+        /* Calibration Steps */
+
+
+        /* Calibration Status */
+        .calibration-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .status-value.success {
+            color: var(--success);
+        }
+
+        .status-value.warning {
+            color: var(--warning);
+        }
+
+        .status-value.error {
+            color: var(--danger);
+        }
+
+        /* Captured Points List */
+
+
+
+
+        .dmx-help {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid #6366f1;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .dmx-help i {
+            color: #6366f1;
+            margin-right: 8px;
+        }
+
+        /* Room Calibration Grid Styles */
+        .room-calibration-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .calibration-point {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .calibration-point:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .calibration-point.captured {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+        }
+
+        .calibration-point.captured::before {
+            content: "✓";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--success);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .calibration-point .position-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .calibration-point .coordinates {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            text-align: center;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+
+        .calibration-point .uwb-data {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            margin-bottom: 2px;
+        }
+
+        .calibration-point .dmx-data {
+            font-size: 0.6rem;
+            opacity: 0.6;
+        }
+
+        /* Tooltip styles */
+        .calibration-point {
+            position: relative;
+        }
+
+        .calibration-point::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .calibration-point:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        /* Calibration Mode Entry Styles */
+        .calibration-mode-entry {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mode-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .mode-status i {
+            font-size: 1.2rem;
+        }
+
+        .mode-status.active i {
+            color: #10b981 !important;
+        }
+
+        .mode-status.inactive i {
+            color: #ef4444 !important;
+        }
+
+        .calibration-instructions {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .instruction-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .instruction-step i {
+            color: #6366f1;
+            width: 16px;
+        }
+
+        /* Current DMX Display Styles */
+        .current-dmx-section {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .current-dmx-display {
+            text-align: center;
+        }
+
+        .current-dmx-info {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #10b981;
+        }
+
+        .dmx-help-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: #6366f1;
+        }
+
+
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .position-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .position-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .position-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .dmx-control {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dmx-control h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .dmx-control input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        .dmx-control input[type="number"] {
+            width: 80px;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #000000;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #000000;
+        }
+
+        .message.info {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #000000;
+        }
+
+
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 12px;
+                height: 50px;
+            }
+
+            .nav-brand span {
+                display: none;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+            }
+
+            .nav-link i {
+                font-size: 1.1rem;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        .message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message.success {
+            background-color: var(--success);
+            color: #000000;
+        }
+
+        .message.error {
+            background-color: var(--danger);
+            color: #000000;
+        }
+
+        .message.warning {
+            background-color: var(--warning);
+            color: #000000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn.active {
+            background: var(--success);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-satellite-dish"></i>
+                <span>UWB Light Control</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Main Interface</span>
+                </a>
+                <a href="/calibration" class="nav-link active">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Calibration</span>
+                </a>
+                <a href="/network" class="nav-link">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Network Info</span>
+                </a>
+                <span class="nav-student">Student Number: 39131218</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-sliders-h"></i> UWB Light Calibration</h1>
+            <p>Configure and calibrate your UWB tracking system for precise light control</p>
+        </div>
+
+        <!-- Calibration Guide -->
+        <div class="calibration-guide">
+            <div class="guide-header">
+                <h2><i class="fas fa-graduation-cap"></i> Automated Follow Spot System Guide</h2>
+                <button class="guide-toggle" onclick="toggleGuide()">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="guide-content" id="guideContent">
+                <div class="guide-section">
+                    <h3><i class="fas fa-crosshairs"></i> 3×3 Grid Room Calibration (Setup)</h3>
+                    <ol>
+                        <li><strong>Enter Calibration Mode:</strong> Click "Enter Calibration Mode" button</li>
+                        <li><strong>Position UWB Tag:</strong> Place your UWB tag at one of the 9 grid positions on the floor</li>
+                        <li><strong>Set Spotlight:</strong> Use the DMX sliders to point the spotlight at the tag's exact location</li>
+                        <li><strong>Capture Point:</strong> Click the grid position button to record the position</li>
+                        <li><strong>Repeat:</strong> Do this for at least 3 different positions (more = better accuracy)</li>
+                        <li><strong>Calculate:</strong> Click "Calculate Room Calibration" when ready</li>
+                        <li><strong>Test:</strong> Use "Test UWB Tracking" to verify the system works</li>
+                        <li><strong>Follow Mode:</strong> Enable "Room Follow Mode" for automatic tracking</li>
+                    </ol>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><i class="fas fa-lightbulb"></i> How It Works</h3>
+                    <ul>
+                        <li><strong>UWB Tracking:</strong> Anchors at the front of the room track the performer's tag position</li>
+                        <li><strong>Grid Mapping:</strong> 3×3 grid creates a coordinate system for the stage area</li>
+                        <li><strong>Real-time Conversion:</strong> UWB coordinates are converted to pan/tilt angles</li>
+                        <li><strong>Automatic Following:</strong> Light automatically follows the performer within the calibrated area</li>
+                        <li><strong>Manual Override:</strong> Switch to manual mode for direct control when needed</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><i class="fas fa-cog"></i> Control Modes</h3>
+                    <ul>
+                        <li><strong>Manual Control:</strong> Direct DMX control with sliders - UWB tracking disabled</li>
+                        <li><strong>UWB Tracking:</strong> Automatic performer following using calibration data</li>
+                        <li><strong>Calibration Mode:</strong> Setup mode for creating the 3×3 grid mapping</li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Tips for Best Results</h3>
+                    <ul>
+                        <li><strong>Cover the Stage:</strong> Use positions that cover different areas of your performance space</li>
+                        <li><strong>Accurate Pointing:</strong> Make sure the spotlight is precisely aimed at the UWB tag during calibration</li>
+                        <li><strong>Stable Position:</strong> Keep the UWB tag still while capturing each calibration point</li>
+                        <li><strong>More Points:</strong> 5-9 points will give you much better accuracy than just 3</li>
+                        <li><strong>Test Movement:</strong> After calibration, test by moving the tag around to see if the light follows</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="grid">
+            <!-- Current Position Display -->
+            <div class="card">
+                <h3><i class="fas fa-map-marker-alt"></i> Current Position</h3>
+                <div class="position-display">
+                    <div class="position-value" id="currentPosition">(0.00, 0.00)</div>
+                    <div class="position-label">Real-time UWB position</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="refreshPosition()">
+                        <i class="fas fa-sync"></i> Refresh Position
+                    </button>
+                </div>
+            </div>
+
+            <!-- DMX Control Card -->
+            <div class="card">
+                <h3><i class="fas fa-lightbulb"></i> DMX Control</h3>
+                <p class="dmx-help">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Live Control:</strong> Move the sliders to control the light in real-time. 
+                    Use these to point the spotlight at your UWB tag during calibration.
+                </p>
+                
+                <!-- Art-Net Configuration Section -->
+                <div class="dmx-control" style="margin-bottom: 20px;">
+                    <h4><i class="fas fa-cog"></i> Art-Net Configuration</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <label style="color: white; font-size: 0.9rem;">IP Address:</label>
+                            <input type="text" id="artnetIP" value="127.0.0.1" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                        <div>
+                            <label style="color: white; font-size: 0.9rem;">Port:</label>
+                            <input type="number" id="artnetPort" value="6454" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <label style="color: white; font-size: 0.9rem;">Pan Channel:</label>
+                            <input type="number" id="panChannel" value="1" min="1" max="512" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                        <div>
+                            <label style="color: white; font-size: 0.9rem;">Tilt Channel:</label>
+                            <input type="number" id="tiltChannel" value="2" min="1" max="512" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                </div>
+                    <div class="btn-group" style="margin-bottom: 15px;">
+                        <button class="btn btn-primary" onclick="configureArtNet()">
+                            <i class="fas fa-save"></i> Save Config
+                    </button>
+                        <button class="btn btn-warning" onclick="testArtNetConnection()">
+                            <i class="fas fa-vial"></i> Test Connection
+                    </button>
+                </div>
+                    <div id="artnetStatus" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+                        <i class="fas fa-info-circle"></i> Click "Test Connection" to verify Art-Net is working
+                </div>
+            </div>
+
+                <!-- Mode Control Section -->
+                <div class="dmx-control" style="margin-bottom: 20px;">
+                    <h4><i class="fas fa-toggle-on"></i> Control Mode</h4>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 15px;">
+                        Choose whether UWB tracking or manual control should be active. Only one mode can be active at a time.
+                    </p>
+                    <div class="btn-group" style="margin-bottom: 15px;">
+                        <button class="btn btn-success" id="manualModeBtn" onclick="enableManualMode()">
+                            <i class="fas fa-hand-paper"></i> Manual Control
+                    </button>
+                        <button class="btn btn-primary" id="uwbModeBtn" onclick="enableUWBMode()">
+                            <i class="fas fa-satellite-dish"></i> UWB Tracking
+                    </button>
+                </div>
+                    <div id="modeStatus" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+                        <i class="fas fa-info-circle"></i> Current mode: <strong id="currentModeText">UWB Tracking</strong>
+            </div>
+        </div>
+
+            <div class="dmx-control">
+                <h4>Pan Control</h4>
+                <input type="range" id="panSlider" min="0" max="255" value="128">
+                <input type="number" id="panValue" min="0" max="255" value="128">
+            </div>
+            <div class="dmx-control">
+                <h4>Tilt Control</h4>
+                <input type="range" id="tiltSlider" min="0" max="255" value="128">
+                <input type="number" id="tiltValue" min="0" max="255" value="128">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="sendDMX()">
+                    <i class="fas fa-paper-plane"></i> Send DMX
+                </button>
+                <button class="btn btn-secondary" onclick="centerDMX()">
+                    <i class="fas fa-crosshairs"></i> Center
+                </button>
+                    <button class="btn btn-warning" onclick="testDMX()">
+                        <i class="fas fa-vial"></i> Test DMX
+                </button>
+            </div>
+            </div>
+        </div>
+
+        <!-- Room Calibration Card -->
+        <div class="card">
+            <h3><i class="fas fa-crosshairs"></i> Room Calibration (3×3 Grid)</h3>
+            <p class="dmx-help">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Room Calibration:</strong> Click each position to capture UWB tag location and spotlight orientation. 
+                Use at least 3 points for basic calibration, 9 points for full room coverage.
+            </p>
+            
+            <!-- Room Calibration Status Indicator -->
+            <div class="calibration-status" style="margin-bottom: 20px;">
+                <div class="status-item">
+                    <span class="status-label">Calibration Status:</span>
+                    <span class="status-value" id="roomCalibrationStatus">Not Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Points Captured:</span>
+                    <span class="status-value" id="roomPointsCaptured">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Follow Mode:</span>
+                    <span class="status-value" id="roomFollowStatus">Inactive</span>
+                </div>
+            </div>
+            
+            <!-- Calibration Mode Entry -->
+            <div class="calibration-mode-entry">
+                <div class="mode-status" id="calibrationModeStatus">
+                    <i class="fas fa-circle" style="color: #ef4444;"></i>
+                    <span>Calibration Mode: <strong>INACTIVE</strong></span>
+                </div>
+                <div class="btn-group" style="margin: 15px 0;">
+                    <button class="btn btn-success" onclick="enterCalibrationMode()" id="enterCalibrationBtn">
+                        <i class="fas fa-play"></i> Enter Calibration Mode
+                    </button>
+                    <button class="btn btn-warning" onclick="exitCalibrationMode()" id="exitCalibrationBtn" style="display: none;">
+                        <i class="fas fa-stop"></i> Exit Calibration Mode
+                    </button>
+                </div>
+                <div class="calibration-instructions" id="calibrationInstructions" style="display: none;">
+                    <div class="instruction-step">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Step 1:</strong> Position your UWB tag at one of the 9 room positions
+                    </div>
+                    <div class="instruction-step">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <strong>Step 2:</strong> Click the position button to capture UWB coordinates and spotlight angles
+                    </div>
+                    <div class="instruction-step">
+                        <i class="fas fa-repeat"></i>
+                        <strong>Step 3:</strong> Repeat for at least 3 positions (more = better accuracy)
+                    </div>
+                    <div class="instruction-step">
+                        <i class="fas fa-calculator"></i>
+                        <strong>Step 4:</strong> Click "Calculate Room Calibration" when ready
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current DMX Values Display -->
+            <div class="current-dmx-section" id="currentDMXSection" style="display: none;">
+                <div class="current-dmx-display" id="currentDMXDisplay">
+                    <div class="current-dmx-info">
+                        <strong>Current DMX Values:</strong><br>
+                        Pan: <span id="currentPanValue">128</span> | Tilt: <span id="currentTiltValue">128</span>
+                    </div>
+                    <div class="dmx-help-text">
+                        <i class="fas fa-info-circle"></i>
+                        Use the DMX sliders above to set the spotlight position, then click a room position to capture it.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Room Calibration Grid -->
+            <div class="room-calibration-grid" id="roomCalibrationGrid" style="display: none;">
+                <!-- Back Row -->
+                <div class="calibration-point" data-row="back" data-col="left" data-tooltip="Click to capture UWB tag at back-left position" onclick="captureRoomPoint('back', 'left')">
+                    <div class="position-label">Back Left</div>
+                    <div class="coordinates" id="back-left-coords">Not captured</div>
+                    <div class="uwb-data" id="back-left-uwb"></div>
+                    <div class="dmx-data" id="back-left-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="back" data-col="center" data-tooltip="Click to capture UWB tag at back-center position" onclick="captureRoomPoint('back', 'center')">
+                    <div class="position-label">Back Center</div>
+                    <div class="coordinates" id="back-center-coords">Not captured</div>
+                    <div class="uwb-data" id="back-center-uwb"></div>
+                    <div class="dmx-data" id="back-center-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="back" data-col="right" data-tooltip="Click to capture UWB tag at back-right position" onclick="captureRoomPoint('back', 'right')">
+                    <div class="position-label">Back Right</div>
+                    <div class="coordinates" id="back-right-coords">Not captured</div>
+                    <div class="uwb-data" id="back-right-uwb"></div>
+                    <div class="dmx-data" id="back-right-dmx"></div>
+                </div>
+
+                <!-- Center Row -->
+                <div class="calibration-point" data-row="center" data-col="left" data-tooltip="Click to capture UWB tag at center-left position" onclick="captureRoomPoint('center', 'left')">
+                    <div class="position-label">Center Left</div>
+                    <div class="coordinates" id="center-left-coords">Not captured</div>
+                    <div class="uwb-data" id="center-left-uwb"></div>
+                    <div class="dmx-data" id="center-left-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="center" data-col="center" data-tooltip="Click to capture UWB tag at center position" onclick="captureRoomPoint('center', 'center')">
+                    <div class="position-label">Center</div>
+                    <div class="coordinates" id="center-center-coords">Not captured</div>
+                    <div class="uwb-data" id="center-center-uwb"></div>
+                    <div class="dmx-data" id="center-center-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="center" data-col="right" data-tooltip="Click to capture UWB tag at center-right position" onclick="captureRoomPoint('center', 'right')">
+                    <div class="position-label">Center Right</div>
+                    <div class="coordinates" id="center-right-coords">Not captured</div>
+                    <div class="uwb-data" id="center-right-uwb"></div>
+                    <div class="dmx-data" id="center-right-dmx"></div>
+                </div>
+
+                <!-- Front Row -->
+                <div class="calibration-point" data-row="front" data-col="left" data-tooltip="Click to capture UWB tag at front-left position" onclick="captureRoomPoint('front', 'left')">
+                    <div class="position-label">Front Left</div>
+                    <div class="coordinates" id="front-left-coords">Not captured</div>
+                    <div class="uwb-data" id="front-left-uwb"></div>
+                    <div class="dmx-data" id="front-left-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="front" data-col="center" data-tooltip="Click to capture UWB tag at front-center position" onclick="captureRoomPoint('front', 'center')">
+                    <div class="position-label">Front Center</div>
+                    <div class="coordinates" id="front-center-coords">Not captured</div>
+                    <div class="uwb-data" id="front-center-uwb"></div>
+                    <div class="dmx-data" id="front-center-dmx"></div>
+                </div>
+                <div class="calibration-point" data-row="front" data-col="right" data-tooltip="Click to capture UWB tag at front-right position" onclick="captureRoomPoint('front', 'right')">
+                    <div class="position-label">Front Right</div>
+                    <div class="coordinates" id="front-right-coords">Not captured</div>
+                    <div class="uwb-data" id="front-right-uwb"></div>
+                    <div class="dmx-data" id="front-right-dmx"></div>
+                </div>
+            </div>
+
+            <!-- Room Calibration Controls -->
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="calculateRoomCalibration()" id="calculateRoomBtn" disabled>
+                    <i class="fas fa-calculator"></i> Calculate Room Calibration
+                </button>
+                <button class="btn btn-success" onclick="startRoomFollowMode()" id="roomFollowBtn" disabled>
+                    <i class="fas fa-crosshairs"></i> Start Room Follow Mode
+                </button>
+                <button class="btn btn-warning" onclick="stopRoomFollowMode()" id="roomStopFollowBtn" style="display: none;">
+                    <i class="fas fa-stop"></i> Stop Room Follow Mode
+                </button>
+                <button class="btn btn-info" onclick="testUWBTracking()" id="testUWBBtn" disabled>
+                    <i class="fas fa-vial"></i> Test UWB Tracking
+                </button>
+                <button class="btn btn-danger" onclick="clearRoomCalibration()">
+                    <i class="fas fa-trash"></i> Clear Room Calibration
+                </button>
+            </div>
+
+            <!-- Mapping Persistence Controls -->
+            <div class="dmx-control" style="margin-top: 15px;">
+                <h4><i class="fas fa-save"></i> Save/Load Room Mapping</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div>
+                        <label style="color: white; font-size: 0.9rem;">New Mapping Name</label>
+                        <input type="text" id="mappingName" placeholder="e.g., Main Stage" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div style="display:flex; align-items:flex-end; gap:10px;">
+                        <button class="btn btn-success" onclick="saveCurrentMapping()" id="saveMappingBtn">
+                            <i class="fas fa-save"></i> Save Mapping
+                        </button>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; align-items: end;">
+                    <div>
+                        <label style="color: white; font-size: 0.9rem;">Saved Mappings</label>
+                        <select id="mappingSelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;"></select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="refreshMappingsList()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="loadSelectedMapping()">
+                        <i class="fas fa-folder-open"></i> Load
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteSelectedMapping()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                <div id="mappingStatus" style="margin-top: 10px; color: rgba(255,255,255,0.8);"></div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPan = 128;
+        let currentTilt = 128;
+        let lastPosition = {x: 0, y: 0};
+        
+        // Room Calibration System
+        let roomCalibrationData = {};
+        let roomCalibrationActive = false;
+        let roomFollowModeActive = false;
+        let roomFollowInterval = null;
+        let calibrationModeActive = false;
+        
+        // DOM elements
+        const panSlider = document.getElementById('panSlider');
+        const panValue = document.getElementById('panValue');
+        const tiltSlider = document.getElementById('tiltSlider');
+        const tiltValue = document.getElementById('tiltValue');
+        
+        // Guide toggle function
+        function toggleGuide() {
+            const guideContent = document.getElementById('guideContent');
+            const guideToggle = document.querySelector('.guide-toggle i');
+            
+            if (guideContent.classList.contains('expanded')) {
+                guideContent.classList.remove('expanded');
+                guideToggle.className = 'fas fa-chevron-down';
+            } else {
+                guideContent.classList.add('expanded');
+                guideToggle.className = 'fas fa-chevron-up';
+            }
+        }
+        
+        // Message display function
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            // Add new message
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+        
+
+        
+        // DMX Control Functions
+        async function sendDMX(pan, tilt) {
+            // If no parameters provided, use current slider values
+            if (pan === undefined || tilt === undefined) {
+                pan = parseInt(document.getElementById('panValue').value);
+                tilt = parseInt(document.getElementById('tiltValue').value);
+            }
+            
+            // Clamp values to valid range
+            pan = Math.max(0, Math.min(255, pan));
+            tilt = Math.max(0, Math.min(255, tilt));
+            
+            // Show sending indicator
+            const sendBtn = document.querySelector('button[onclick="sendDMX()"]');
+            if (sendBtn) {
+                const originalText = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                sendBtn.disabled = true;
+            }
+            
+            try {
+                const response = await fetch('/api/dmx_test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pan, tilt })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update current values
+                    currentPan = pan;
+                    currentTilt = tilt;
+                    
+                    // Update sliders if they exist
+                    if (document.getElementById('panSlider')) {
+                        document.getElementById('panSlider').value = pan;
+                        document.getElementById('panValue').value = pan;
+                    }
+                    if (document.getElementById('tiltSlider')) {
+                        document.getElementById('tiltSlider').value = tilt;
+                        document.getElementById('tiltValue').value = tilt;
+                    }
+                    
+                    // Update current DMX display if in calibration mode
+                    if (calibrationModeActive) {
+                        updateCurrentDMXDisplay();
+                    }
+                    
+                    console.log(`DMX sent successfully: Pan=${pan}, Tilt=${tilt}`);
+                    
+                    // Show success message briefly
+                    showMessage(`DMX sent: Pan=${pan}, Tilt=${tilt}`, 'success');
+                    
+                    return true;
+                } else {
+                    console.error('Failed to send DMX:', data.message);
+                    showMessage('Failed to send DMX: ' + data.message, 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error sending DMX:', error);
+                showMessage('Error sending DMX: ' + error.message, 'error');
+                return false;
+            } finally {
+                // Restore button
+                if (sendBtn) {
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send DMX';
+                    sendBtn.disabled = false;
+                }
+            }
+        }
+        
+        function centerDMX() {
+            const centerValue = 128;
+            document.getElementById('panSlider').value = centerValue;
+            document.getElementById('panValue').value = centerValue;
+            document.getElementById('tiltSlider').value = centerValue;
+            document.getElementById('tiltValue').value = centerValue;
+            
+            // Update current values
+            currentPan = centerValue;
+            currentTilt = centerValue;
+            
+            // Send DMX to center position
+            sendDMX(centerValue, centerValue);
+        }
+        
+        // Test DMX function to verify control is working
+        async function testDMX() {
+            console.log('Testing DMX control...');
+            
+            // Test center position
+            await sendDMX(128, 128);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test left position
+            await sendDMX(0, 128);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test right position
+            await sendDMX(255, 128);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test up position
+            await sendDMX(128, 0);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test down position
+            await sendDMX(128, 255);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Return to center
+            await sendDMX(128, 128);
+            
+            console.log('DMX test completed');
+            showMessage('DMX test completed - check if light moved through all positions', 'info');
+        }
+        
+        // Art-Net Configuration Functions
+        async function configureArtNet() {
+            const ip = document.getElementById('artnetIP').value;
+            const port = parseInt(document.getElementById('artnetPort').value);
+            const panChannel = parseInt(document.getElementById('panChannel').value);
+            const tiltChannel = parseInt(document.getElementById('tiltChannel').value);
+            const speedChannel = parseInt(document.getElementById('speedChannel').value || 0) || null;
+            const speedValue = parseInt(document.getElementById('speedValue').value || '0');
+            const dimmerChannel = parseInt(document.getElementById('dimmerChannel').value || 0) || null;
+            const dimmerValue = parseInt(document.getElementById('dimmerValue').value || '255');
+            
+            try {
+                const response = await fetch('/api/artnet/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                        ip: ip,
+                        port: port,
+                        pan_channel: panChannel,
+                        tilt_channel: tiltChannel,
+                        speed_channel: speedChannel,
+                        speed_value: speedValue,
+                        dimmer_channel: dimmerChannel,
+                        dimmer_value: dimmerValue
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Art-Net configuration saved successfully!', 'success');
+                    updateArtNetStatus();
+                } else {
+                    showMessage('Failed to save Art-Net configuration: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error configuring Art-Net:', error);
+                showMessage('Error configuring Art-Net: ' + error.message, 'error');
+            }
+        }
+        
+        async function testArtNetConnection() {
+            const statusElement = document.getElementById('artnetStatus');
+            statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing Art-Net connection...';
+            
+            try {
+                const response = await fetch('/api/artnet/test_connection', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusElement.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> Art-Net test successful! Check if light moved.';
+                    showMessage('Art-Net test completed successfully!', 'success');
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> Art-Net test failed: ' + result.message;
+                    showMessage('Art-Net test failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error testing Art-Net:', error);
+                statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> Art-Net test error: ' + error.message;
+                showMessage('Error testing Art-Net: ' + error.message, 'error');
+            }
+        }
+        
+        async function updateArtNetStatus() {
+            try {
+                const response = await fetch('/api/artnet/status');
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('artnetStatus');
+                if (data.connected) {
+                    statusElement.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Connected to ${data.ip}:${data.port}<br>Pan: Ch${data.pan_channel}, Tilt: Ch${data.tilt_channel}` +
+                    (data.speed_channel ? `<br>Speed: Ch${data.speed_channel} (Val ${data.speed_value})` : '') +
+                    (data.dimmer_channel ? `<br>Dimmer: Ch${data.dimmer_channel} (Val ${data.dimmer_value})` : '');
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> Not connected';
+                }
+            } catch (error) {
+                console.error('Error updating Art-Net status:', error);
+            }
+        }
+        
+        // Utility Functions
+        function refreshPosition() {
+            updateCurrentPosition();
+        }
+        
+        function updateCurrentPosition() {
+            fetch('/api/position')
+            .then(response => response.json())
+            .then(data => {
+                if (data.position) {
+                    lastPosition = data.position;
+                    document.getElementById('currentPosition').textContent = 
+                        `(${data.position.x.toFixed(2)}, ${data.position.y.toFixed(2)})`;
+                }
+            })
+            .catch(error => console.error('Error updating position:', error));
+        }
+        
+        // DMX slider sync with live control
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing DMX control...');
+            
+            const panSlider = document.getElementById('panSlider');
+            const panValue = document.getElementById('panValue');
+            const tiltSlider = document.getElementById('tiltSlider');
+            const tiltValue = document.getElementById('tiltValue');
+
+            console.log('DMX elements found:', {
+                panSlider: !!panSlider,
+                panValue: !!panValue,
+                tiltSlider: !!tiltSlider,
+                tiltValue: !!tiltValue
+            });
+
+            // Debounced DMX sender for smooth control
+            let dmxDebounce = null;
+            function sendDMXDebounced(pan, tilt, delay = 100) {
+                if (dmxDebounce) clearTimeout(dmxDebounce);
+                dmxDebounce = setTimeout(() => {
+                    console.log(`Sending debounced DMX: Pan=${pan}, Tilt=${tilt}`);
+                    sendDMX(pan, tilt);
+                }, delay);
+            }
+
+            if (panSlider && panValue) {
+                panSlider.addEventListener('input', function() {
+                    const value = parseInt(this.value);
+                    if (!isNaN(value) && value >= 0 && value <= 255) {
+                    panValue.value = value;
+                        currentPan = value;
+                        console.log(`Pan slider changed to: ${value}`);
+                    
+                    // Send DMX automatically with debouncing
+                    sendDMXDebounced(currentPan, currentTilt);
+                    }
+                });
+                
+                panValue.addEventListener('input', function() {
+                    let value = parseInt(this.value);
+                    if (isNaN(value)) value = 128;
+                    if (value < 0) value = 0;
+                    if (value > 255) value = 255;
+                    
+                    this.value = value;
+                    panSlider.value = value;
+                    currentPan = value;
+                    console.log(`Pan value changed to: ${value}`);
+                    
+                    // Send DMX automatically
+                    sendDMXDebounced(currentPan, currentTilt);
+                });
+            }
+
+            if (tiltSlider && tiltValue) {
+                tiltSlider.addEventListener('input', function() {
+                    const value = parseInt(this.value);
+                    if (!isNaN(value) && value >= 0 && value <= 255) {
+                    tiltValue.value = value;
+                        currentTilt = value;
+                        console.log(`Tilt slider changed to: ${value}`);
+                    
+                    // Send DMX automatically with debouncing
+                    sendDMXDebounced(currentPan, currentTilt);
+                    }
+                });
+                
+                tiltValue.addEventListener('input', function() {
+                    let value = parseInt(this.value);
+                    if (isNaN(value)) value = 128;
+                    if (value < 0) value = 0;
+                    if (value > 255) value = 255;
+                    
+                    this.value = value;
+                    tiltSlider.value = value;
+                    currentTilt = value;
+                    console.log(`Tilt value changed to: ${value}`);
+                    
+                    // Send DMX automatically
+                    sendDMXDebounced(currentPan, currentTilt);
+                });
+            }
+            
+            console.log('DMX control initialized successfully');
+            
+            // Initialize page
+            updateCurrentPosition();
+            loadRoomCalibrationStatus(); // Load room calibration status
+            updateArtNetStatus(); // Load Art-Net status
+            updateModeStatus(); // Load current mode status
+            refreshMappingsList(); // Load saved mappings list
+            
+            // Enable instant mode on backend and disable Kalman filtering
+            fetch('/api/instant_mode', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dmx_update_rate: 0.0005, position_update_rate: 0.002, velocity_filter: 0.05, position_history_size: 1, range_history_size: 1 })
+            }).catch(() => {});
+            fetch('/api/kalman/configure', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: false })
+            }).catch(() => {});
+            
+            // Update position every second
+            setInterval(updateCurrentPosition, 1000);
+            
+            // Update room calibration status every 2 seconds
+            setInterval(updateRoomCalibrationStatus, 2000);
+        });
+
+        // Enter Calibration Mode
+        function enterCalibrationMode() {
+            calibrationModeActive = true;
+            
+            // Update UI
+            document.getElementById('calibrationModeStatus').innerHTML = 
+                '<i class="fas fa-circle" style="color: #10b981;"></i>' +
+                '<span>Calibration Mode: <strong>ACTIVE</strong></span>';
+            document.getElementById('calibrationModeStatus').className = 'mode-status active';
+            
+            // Show/hide buttons
+            document.getElementById('enterCalibrationBtn').style.display = 'none';
+            document.getElementById('exitCalibrationBtn').style.display = 'inline-block';
+            
+            // Show instructions and grid
+            document.getElementById('calibrationInstructions').style.display = 'block';
+            document.getElementById('roomCalibrationGrid').style.display = 'grid';
+            document.getElementById('currentDMXSection').style.display = 'block';
+            
+            // Enable calibration points
+            document.querySelectorAll('.calibration-point').forEach(point => {
+                point.style.pointerEvents = 'auto';
+                point.style.opacity = '1';
+            });
+
+            // Reset 3x3 grid to open state for a fresh calibration session
+            roomCalibrationData = {};
+            document.querySelectorAll('.calibration-point').forEach(point => {
+                point.classList.remove('captured');
+            });
+            document.querySelectorAll('.coordinates').forEach(coord => {
+                coord.textContent = 'Not captured';
+            });
+            document.querySelectorAll('.uwb-data').forEach(el => { el.textContent = ''; });
+            document.querySelectorAll('.dmx-data').forEach(el => { el.textContent = ''; });
+
+            // Disable action buttons until enough points are captured
+            const calcBtn = document.getElementById('calculateRoomBtn');
+            if (calcBtn) calcBtn.disabled = true;
+            const followBtn = document.getElementById('roomFollowBtn');
+            if (followBtn) followBtn.disabled = true;
+            const testBtn = document.getElementById('testUWBBtn');
+            if (testBtn) testBtn.disabled = true;
+            const saveBtn = document.getElementById('saveMappingBtn');
+            if (saveBtn) saveBtn.disabled = true;
+
+            // Update status indicators
+            updateRoomCalibrationStatus();
+            
+            // Update current DMX display
+            updateCurrentDMXDisplay();
+            
+            showMessage('Calibration mode activated! You can now capture room positions.', 'success');
+        }
+
+        // Exit Calibration Mode
+        function exitCalibrationMode() {
+            calibrationModeActive = false;
+            
+            // Update UI
+            document.getElementById('calibrationModeStatus').innerHTML = 
+                '<i class="fas fa-circle" style="color: #ef4444;"></i>' +
+                '<span>Calibration Mode: <strong>INACTIVE</strong></span>';
+            document.getElementById('calibrationModeStatus').className = 'mode-status inactive';
+            
+            // Show/hide buttons
+            document.getElementById('enterCalibrationBtn').style.display = 'inline-block';
+            document.getElementById('exitCalibrationBtn').style.display = 'none';
+            
+            // Hide instructions and grid
+            document.getElementById('calibrationInstructions').style.display = 'none';
+            document.getElementById('roomCalibrationGrid').style.display = 'none';
+            document.getElementById('currentDMXSection').style.display = 'none';
+            
+            // Disable calibration points
+            document.querySelectorAll('.calibration-point').forEach(point => {
+                point.style.pointerEvents = 'none';
+                point.style.opacity = '0.5';
+            });
+            
+            showMessage('Calibration mode deactivated.', 'info');
+        }
+
+        // Update room calibration status indicators
+        function updateRoomCalibrationStatus() {
+            const statusElement = document.getElementById('roomCalibrationStatus');
+            const pointsElement = document.getElementById('roomPointsCaptured');
+            const followElement = document.getElementById('roomFollowStatus');
+            
+            if (statusElement) {
+                if (roomCalibrationActive) {
+                    statusElement.textContent = 'Active';
+                    statusElement.className = 'status-value success';
+                } else {
+                    statusElement.textContent = 'Not Active';
+                    statusElement.className = 'status-value warning';
+                }
+            }
+            
+            if (pointsElement) {
+                const pointsCount = Object.keys(roomCalibrationData).length;
+                pointsElement.textContent = pointsCount.toString();
+                
+                if (pointsCount >= 3) {
+                    pointsElement.className = 'status-value success';
+                } else if (pointsCount > 0) {
+                    pointsElement.className = 'status-value warning';
+                } else {
+                    pointsElement.className = 'status-value error';
+                }
+            }
+            
+            if (followElement) {
+                if (roomFollowModeActive) {
+                    followElement.textContent = 'Active';
+                    followElement.className = 'status-value success';
+                } else {
+                    followElement.textContent = 'Inactive';
+                    followElement.className = 'status-value warning';
+                }
+            }
+        }
+
+        // Enhanced room calibration point capture with status update
+        async function captureRoomPoint(row, col) {
+            if (!calibrationModeActive) {
+                showMessage('Please enter calibration mode first!', 'error');
+                return;
+            }
+            
+            // Refresh latest position to avoid capturing stale or null values
+            try {
+                const resp = await fetch('/api/position');
+                const pj = await resp.json();
+                if (pj && pj.position && typeof pj.position.x === 'number' && typeof pj.position.y === 'number') {
+                    lastPosition = pj.position;
+                }
+            } catch (e) {
+                // ignore errors and fallback to lastPosition
+            }
+            
+            if (!lastPosition || lastPosition.x === null || Number.isNaN(Number(lastPosition.x))) {
+                showMessage('No UWB position available. Please ensure the tag is connected and positioned.', 'error');
+                return;
+            }
+
+            const positionKey = `${row}-${col}`;
+            
+            // Store calibration data (flat shape expected by backend)
+            roomCalibrationData[positionKey] = {
+                position: positionKey,
+                uwb_x: Number(lastPosition.x),
+                uwb_y: Number(lastPosition.y),
+                uwb_z: Number(lastPosition.z || 0),
+                pan: Number(currentPan),
+                tilt: Number(currentTilt),
+                timestamp: new Date().toISOString()
+            };
+
+            // Update UI
+            updateRoomCalibrationPointUI(row, col, roomCalibrationData[positionKey]);
+            
+            // Enable calculate button if we have enough points
+            if (Object.keys(roomCalibrationData).length >= 3) {
+                document.getElementById('calculateRoomBtn').disabled = false;
+            }
+
+            // Update status indicators
+            updateRoomCalibrationStatus();
+
+            showMessage(`Room calibration point captured: ${row} ${col}`, 'success');
+            
+            // Update current DMX display
+            updateCurrentDMXDisplay();
+        }
+
+        // Update current DMX values display for room calibration
+        function updateCurrentDMXDisplay() {
+            const currentDMXDisplay = document.getElementById('currentDMXDisplay');
+            if (currentDMXDisplay) {
+                currentDMXDisplay.innerHTML = `
+                    <div class="current-dmx-info">
+                        <strong>Current DMX Values:</strong><br>
+                        Pan: <span id="currentPanValue">${currentPan}</span> | Tilt: <span id="currentTiltValue">${currentTilt}</span>
+                    </div>
+                    <div class="dmx-help-text">
+                        <i class="fas fa-info-circle"></i>
+                        Use the DMX sliders above to set the spotlight position, then click a room position to capture it.
+                    </div>
+                `;
+            }
+        }
+
+        // Update room calibration point UI
+        function updateRoomCalibrationPointUI(row, col, data) {
+            const pointElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const coordsElement = document.getElementById(`${row}-${col}-coords`);
+            const uwbElement = document.getElementById(`${row}-${col}-uwb`);
+            const dmxElement = document.getElementById(`${row}-${col}-dmx`);
+
+            if (pointElement && coordsElement && uwbElement && dmxElement) {
+                // Mark as captured
+                pointElement.classList.add('captured');
+
+                // Support both legacy nested shape and new flat shape
+                const hasNested = data && data.uwb && typeof data.uwb.x === 'number' && data.spotlight;
+                const ux = hasNested ? data.uwb.x : Number(data.uwb_x);
+                const uy = hasNested ? data.uwb.y : Number(data.uwb_y);
+                const pan = hasNested ? data.spotlight.pan : Number(data.pan);
+                const tilt = hasNested ? data.spotlight.tilt : Number(data.tilt);
+                
+                // Update coordinates display
+                if (!Number.isNaN(ux) && !Number.isNaN(uy)) {
+                    coordsElement.textContent = `(${ux.toFixed(3)}, ${uy.toFixed(3)})`;
+                    uwbElement.textContent = `UWB: (${ux.toFixed(3)}, ${uy.toFixed(3)})`;
+                } else {
+                    coordsElement.textContent = 'Captured';
+                    uwbElement.textContent = '';
+                }
+                
+                // Update DMX data
+                if (!Number.isNaN(pan) && !Number.isNaN(tilt)) {
+                    dmxElement.textContent = `DMX: Pan ${pan}, Tilt ${tilt}`;
+                } else {
+                    dmxElement.textContent = '';
+                }
+            }
+        }
+
+        // Calculate room calibration using improved backend
+        async function calculateRoomCalibration() {
+            if (!calibrationModeActive) {
+                showMessage('Please enter calibration mode first!', 'error');
+                return;
+            }
+            
+            if (Object.keys(roomCalibrationData).length < 3) {
+                showMessage('Need at least 3 calibration points to calculate mapping', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Calculating room calibration mapping...', 'info');
+                
+                // Prepare data for backend - convert to array format
+                const calibrationPoints = Object.values(roomCalibrationData).map(data => ({
+                    position: data.position,
+                    uwb_x: data.uwb_x,
+                    uwb_y: data.uwb_y,
+                    uwb_z: data.uwb_z,
+                    pan: data.pan,
+                    tilt: data.tilt
+                }));
+
+                console.log('Sending calibration points to backend:', calibrationPoints);
+
+                // Send to backend for calculation
+                const response = await fetch('/api/calibration/calculate_room_mapping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ points: calibrationPoints })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    roomCalibrationActive = true;
+                    document.getElementById('calculateRoomBtn').disabled = false;
+                    document.getElementById('roomFollowBtn').disabled = false;
+                    document.getElementById('testUWBBtn').disabled = false;
+                    document.getElementById('saveMappingBtn').disabled = false;
+                    
+                    // Update status indicators
+                    updateRoomCalibrationStatus();
+                    
+                    showMessage('Room calibration calculated successfully! You can now use Room Follow Mode.', 'success');
+                    
+                    // Display grid information
+                    if (result.grid_info) {
+                        console.log('Grid boundaries:', result.grid_info);
+                        showMessage(`Grid mapped: ${result.points_used} points covering ${result.grid_info.grid_width.toFixed(2)}m × ${result.grid_info.grid_height.toFixed(2)}m`, 'info');
+                    }
+
+                    // Auto-enable instant room follow mode right after calculation
+                    try {
+                        await fetch('/api/calibration/room/follow_mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enable: true }) });
+                        // Re-assert instant mode settings for maximum responsiveness
+                        await fetch('/api/instant_mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dmx_update_rate: 0.0005, position_update_rate: 0.002, velocity_filter: 0.05, position_history_size: 1, range_history_size: 1 }) });
+                        showMessage('Instant follow enabled.', 'success');
+                    } catch (e) {
+                        // Non-fatal
+                    }
+                } else {
+                    showMessage('Room calibration calculation failed: ' + result.message, 'error');
+                }
+
+            } catch (error) {
+                console.error('Error calculating room calibration:', error);
+                showMessage('Error calculating room calibration: ' + error.message, 'error');
+            }
+        }
+
+        // Start room follow mode with improved functionality
+        async function startRoomFollowMode() {
+            if (!roomCalibrationActive) {
+                showMessage('Please calibrate the room first', 'error');
+                return;
+            }
+
+            try {
+                // Enable room follow mode on backend
+                const response = await fetch('/api/calibration/room/follow_mode', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enable: true })
+                        });
+
+                        const result = await response.json();
+                        
+                        if (result.success) {
+            roomFollowModeActive = true;
+            document.getElementById('roomFollowBtn').style.display = 'none';
+            document.getElementById('roomStopFollowBtn').style.display = 'inline-block';
+
+                    // Switch UI to UWB Tracking; backend now follows instantly using mapping
+                    document.getElementById('manualModeBtn').classList.remove('active');
+                    document.getElementById('uwbModeBtn').classList.add('active');
+                    document.getElementById('currentModeText').textContent = 'UWB Tracking';
+
+                    // Update status indicators
+                    updateRoomCalibrationStatus();
+                    
+                    showMessage('Room follow mode activated! Backend is now using your grid for instant follow.', 'success');
+                } else {
+                    showMessage('Failed to enable room follow mode: ' + result.message, 'error');
+                }
+
+                    } catch (error) {
+                console.error('Error starting room follow mode:', error);
+                showMessage('Error starting room follow mode: ' + error.message, 'error');
+                    }
+        }
+
+        // Stop room follow mode
+        async function stopRoomFollowMode() {
+            try {
+                // Disable room follow mode on backend
+                const response = await fetch('/api/calibration/room/follow_mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enable: false })
+                });
+
+            roomFollowModeActive = false;
+            document.getElementById('roomFollowBtn').style.display = 'inline-block';
+            document.getElementById('roomStopFollowBtn').style.display = 'none';
+
+            if (roomFollowInterval) {
+                clearInterval(roomFollowInterval);
+                roomFollowInterval = null;
+            }
+
+                // Update status indicators
+                updateRoomCalibrationStatus();
+
+            showMessage('Room follow mode stopped', 'info');
+            } catch (error) {
+                console.error('Error stopping room follow mode:', error);
+                showMessage('Error stopping room follow mode: ' + error.message, 'error');
+            }
+        }
+
+        // Clear room calibration with backend sync
+        async function clearRoomCalibration() {
+            if (confirm('Are you sure you want to clear all room calibration data? This will disable the automated follow spot system.')) {
+                try {
+                    // Clear on backend
+                    const response = await fetch('/api/calibration/room/clear', {
+                        method: 'POST'
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                roomCalibrationData = {};
+                roomCalibrationActive = false;
+                        roomFollowModeActive = false;
+                        
+                        // Stop follow mode if active
+                        if (roomFollowInterval) {
+                            clearInterval(roomFollowInterval);
+                            roomFollowInterval = null;
+                        }
+                
+                // Reset UI
+                document.querySelectorAll('.calibration-point').forEach(point => {
+                    point.classList.remove('captured');
+                });
+                
+                document.querySelectorAll('.coordinates').forEach(coord => {
+                    coord.textContent = 'Not captured';
+                });
+                
+                document.querySelectorAll('.uwb-data').forEach(data => {
+                    data.textContent = '';
+                });
+                
+                document.querySelectorAll('.dmx-data').forEach(data => {
+                    data.textContent = '';
+                });
+                
+                // Reset buttons
+                document.getElementById('calculateRoomBtn').disabled = true;
+                document.getElementById('roomFollowBtn').disabled = true;
+                        document.getElementById('roomFollowBtn').style.display = 'inline-block';
+                        document.getElementById('roomStopFollowBtn').style.display = 'none';
+                        
+                        // Update status indicators
+                        updateRoomCalibrationStatus();
+                        
+                        showMessage('All room calibration data cleared. Automated follow spot system disabled.', 'info');
+                    } else {
+                        showMessage('Failed to clear room calibration: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error clearing room calibration:', error);
+                    showMessage('Error clearing room calibration: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Load room calibration status on page load
+        async function loadRoomCalibrationStatus() {
+            try {
+                const response = await fetch('/api/calibration/room/status');
+                const data = await response.json();
+                
+                if (data.active) {
+                    roomCalibrationActive = true;
+                    document.getElementById('calculateRoomBtn').disabled = false;
+                    document.getElementById('roomFollowBtn').disabled = false;
+                    document.getElementById('testUWBBtn').disabled = false;
+                    document.getElementById('saveMappingBtn').disabled = false;
+                    
+                    // Load existing points
+                    const pointsResponse = await fetch('/api/calibration/room/points');
+                    const pointsData = await pointsResponse.json();
+                    
+                    if (pointsData.points) {
+                        roomCalibrationData = pointsData.points;
+                        
+                        // Update UI for existing points
+                        Object.entries(roomCalibrationData).forEach(([position, data]) => {
+                            const [row, col] = position.split('-');
+                            updateRoomCalibrationPointUI(row, col, data);
+                        });
+                        
+                        // Enable calculate button if enough points
+                        if (Object.keys(roomCalibrationData).length >= 3) {
+                            document.getElementById('calculateRoomBtn').disabled = false;
+                        }
+                        
+                        showMessage(`Loaded existing room calibration with ${Object.keys(roomCalibrationData).length} points`, 'info');
+                    }
+                }
+                
+                // Update status indicators
+                updateRoomCalibrationStatus();
+                
+            } catch (error) {
+                console.error('Error loading room calibration status:', error);
+                // Still update status indicators even if loading fails
+                updateRoomCalibrationStatus();
+            }
+        }
+
+        // Mapping persistence functions
+        async function refreshMappingsList() {
+            try {
+                const r = await fetch('/api/calibration/room/mappings');
+                const j = await r.json();
+                const sel = document.getElementById('mappingSelect');
+                sel.innerHTML = '';
+                (j.mappings || []).forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name + (j.active === name ? ' (active)' : '');
+                    sel.appendChild(opt);
+                });
+                document.getElementById('mappingStatus').textContent = `Loaded ${ (j.mappings||[]).length } mappings`;
+            } catch (e) {
+                document.getElementById('mappingStatus').textContent = 'Failed to load mappings';
+            }
+        }
+
+        async function saveCurrentMapping() {
+            const name = (document.getElementById('mappingName').value || '').trim();
+            if (!name) { showMessage('Please enter a mapping name', 'error'); return; }
+            // If mapping not active but we have enough points, calculate first
+            if (!roomCalibrationActive && Object.keys(roomCalibrationData).length >= 3) {
+                console.log('Mapping not active, calculating...');
+                await calculateRoomCalibration();
+            }
+            if (!roomCalibrationActive) {
+                showMessage('Please calculate the room calibration before saving', 'error');
+                return;
+            }
+            try {
+                console.log('Saving mapping', name);
+                const r = await fetch('/api/calibration/room/save_mapping', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+                });
+                const j = await r.json();
+                if (j.success) {
+                    showMessage(`Mapping '${name}' saved`, 'success');
+                    document.getElementById('mappingStatus').textContent = `Active mapping: ${j.active}`;
+                    refreshMappingsList();
+                } else {
+                    showMessage(j.message || 'Failed to save mapping', 'error');
+                }
+            } catch (e) { showMessage('Failed to save mapping', 'error'); }
+        }
+
+        async function loadSelectedMapping() {
+            const sel = document.getElementById('mappingSelect');
+            const name = sel.value;
+            if (!name) { showMessage('Select a mapping to load', 'error'); return; }
+            try {
+                const r = await fetch('/api/calibration/room/load_mapping', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+                });
+                const j = await r.json();
+                if (j.success) {
+                    showMessage(`Mapping '${name}' loaded`, 'success');
+                    document.getElementById('mappingStatus').textContent = `Active mapping: ${j.active}`;
+                    // Reload status and points
+                    await loadRoomCalibrationStatus();
+
+                    // Auto-enable instant follow when a mapping is loaded
+                    try {
+                        await fetch('/api/calibration/room/follow_mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enable: true }) });
+                        await fetch('/api/instant_mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dmx_update_rate: 0.0005, position_update_rate: 0.002, velocity_filter: 0.05, position_history_size: 1, range_history_size: 1 }) });
+                        showMessage('Instant follow enabled for loaded mapping.', 'success');
+                    } catch (e) {}
+                } else {
+                    showMessage(j.message || 'Failed to load mapping', 'error');
+                }
+            } catch (e) { showMessage('Failed to load mapping', 'error'); }
+        }
+
+        async function deleteSelectedMapping() {
+            const sel = document.getElementById('mappingSelect');
+            const name = sel.value;
+            if (!name) { showMessage('Select a mapping to delete', 'error'); return; }
+            if (!confirm(`Delete mapping '${name}'?`)) return;
+            try {
+                const r = await fetch('/api/calibration/room/delete_mapping', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+                });
+                const j = await r.json();
+                if (j.success) {
+                    showMessage(`Mapping '${name}' deleted`, 'info');
+                    document.getElementById('mappingStatus').textContent = j.active ? `Active mapping: ${j.active}` : 'No active mapping';
+                    refreshMappingsList();
+                } else {
+                    showMessage(j.message || 'Failed to delete mapping', 'error');
+                }
+            } catch (e) { showMessage('Failed to delete mapping', 'error'); }
+        }
+
+        // Mode Control Functions
+        async function enableManualMode() {
+            try {
+                // Disable UWB tracking on backend
+                const response = await fetch('/api/auto_follow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: false })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update UI
+                    document.getElementById('uwbModeBtn').classList.remove('active');
+                    document.getElementById('manualModeBtn').classList.add('active');
+                    document.getElementById('currentModeText').textContent = 'Manual Control';
+                    
+                    // Hide UWB calibration elements
+                    document.getElementById('roomCalibrationGrid').style.display = 'none';
+                    document.getElementById('currentDMXSection').style.display = 'block';
+                    
+                    // Update calibration mode status
+                    document.getElementById('calibrationModeStatus').innerHTML = 
+                        '<i class="fas fa-circle" style="color: #ef4444;"></i>' +
+                        '<span>Calibration Mode: <strong>INACTIVE</strong></span>';
+                    document.getElementById('calibrationModeStatus').className = 'mode-status inactive';
+                    
+                    // Show/hide buttons
+                    document.getElementById('enterCalibrationBtn').style.display = 'inline-block';
+                    document.getElementById('exitCalibrationBtn').style.display = 'none';
+                    document.getElementById('calculateRoomBtn').disabled = true;
+                    document.getElementById('roomFollowBtn').disabled = true;
+                    document.getElementById('roomFollowBtn').style.display = 'inline-block';
+                    document.getElementById('roomStopFollowBtn').style.display = 'none';
+                    
+                    // Disable calibration points
+                    document.querySelectorAll('.calibration-point').forEach(point => {
+                        point.style.pointerEvents = 'none';
+                        point.style.opacity = '0.5';
+                    });
+                    
+                    showMessage('Switched to Manual Control Mode. UWB tracking disabled. You can now manually control the spotlight.', 'success');
+                } else {
+                    showMessage('Failed to switch to manual mode: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error enabling manual mode:', error);
+                showMessage('Error switching to manual mode: ' + error.message, 'error');
+            }
+        }
+
+        async function enableUWBMode() {
+            try {
+                // Enable UWB tracking on backend
+                const response = await fetch('/api/auto_follow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: true })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update UI
+                    document.getElementById('manualModeBtn').classList.remove('active');
+                    document.getElementById('uwbModeBtn').classList.add('active');
+                    document.getElementById('currentModeText').textContent = 'UWB Tracking';
+                    
+                    // Show UWB calibration elements
+                    document.getElementById('roomCalibrationGrid').style.display = 'grid';
+                    document.getElementById('currentDMXSection').style.display = 'none';
+                    
+                    // Update calibration mode status
+                    document.getElementById('calibrationModeStatus').innerHTML = 
+                        '<i class="fas fa-circle" style="color: #10b981;"></i>' +
+                        '<span>Calibration Mode: <strong>ACTIVE</strong></span>';
+                    document.getElementById('calibrationModeStatus').className = 'mode-status active';
+                    
+                    // Show/hide buttons
+                    document.getElementById('enterCalibrationBtn').style.display = 'none';
+                    document.getElementById('exitCalibrationBtn').style.display = 'inline-block';
+                    document.getElementById('calculateRoomBtn').disabled = false;
+                    document.getElementById('roomFollowBtn').disabled = false;
+                    document.getElementById('roomFollowBtn').style.display = 'inline-block';
+                    document.getElementById('roomStopFollowBtn').style.display = 'none';
+                    
+                    // Enable calibration points
+                    document.querySelectorAll('.calibration-point').forEach(point => {
+                        point.style.pointerEvents = 'auto';
+                        point.style.opacity = '1';
+                    });
+                    
+                    showMessage('Switched to UWB Tracking Mode. Spotlight will now track the UWB tag automatically.', 'success');
+                } else {
+                    showMessage('Failed to switch to UWB mode: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error enabling UWB mode:', error);
+                showMessage('Error switching to UWB mode: ' + error.message, 'error');
+            }
+        }
+        
+        // Update mode status on page load
+        async function updateModeStatus() {
+            try {
+                const response = await fetch('/api/auto_follow/status');
+                const data = await response.json();
+                
+                if (data.auto_follow_enabled) {
+                    // UWB mode is active
+                    document.getElementById('uwbModeBtn').classList.add('active');
+                    document.getElementById('manualModeBtn').classList.remove('active');
+                    document.getElementById('currentModeText').textContent = 'UWB Tracking';
+                } else {
+                    // Manual mode is active
+                    document.getElementById('manualModeBtn').classList.add('active');
+                    document.getElementById('uwbModeBtn').classList.remove('active');
+                    document.getElementById('currentModeText').textContent = 'Manual Control';
+                }
+            } catch (error) {
+                console.error('Error updating mode status:', error);
+            }
+        }
+
+        // Test UWB tracking system
+        async function testUWBTracking() {
+            if (!roomCalibrationActive) {
+                showMessage('Please calibrate the room first before testing UWB tracking', 'error');
+                return;
+            }
+            
+            showMessage('Testing UWB tracking system... Move the UWB tag around to see if the light follows', 'info');
+            
+            // Enable UWB mode temporarily for testing
+            try {
+                const response = await fetch('/api/auto_follow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: true })
+                });
+                
+                if (response.ok) {
+                    // Start a brief test period
+                    setTimeout(() => {
+                        showMessage('UWB tracking test completed. Check if the light followed the tag movement.', 'info');
+                    }, 10000); // 10 second test
+                }
+            } catch (error) {
+                console.error('Error testing UWB tracking:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

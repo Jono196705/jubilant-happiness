@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UWB Light Control - Network Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --black-text: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Top Navigation Menu */
+        .top-nav {
+            background: var(--dark);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            position: relative;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .nav-brand i {
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-student {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            white-space: nowrap;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link i {
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h3 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-value.success {
+            color: var(--success);
+        }
+
+        .status-value.warning {
+            color: var(--warning);
+        }
+
+        .status-value.error {
+            color: var(--danger);
+        }
+
+        .url-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .url-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .url-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .url-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .url-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .url-link {
+            color: var(--text);
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            display: block;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .url-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--primary-dark);
+        }
+
+        .url-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .qr-code h4 {
+            color: var(--dark);
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .qr-code p {
+            color: var(--text-light);
+            margin: 10px 0 0 0;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.9);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        .message.info {
+            background: rgba(99, 102, 241, 0.9);
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.warning {
+            background: var(--warning);
+        }
+
+        .status-indicator.error {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 12px;
+                height: 50px;
+            }
+
+            .nav-brand span {
+                display: none;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+            }
+
+            .nav-link i {
+                font-size: 1.1rem;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-satellite-dish"></i>
+                <span>UWB Light Control</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Main Interface</span>
+                </a>
+                <a href="/calibration" class="nav-link">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Calibration</span>
+                </a>
+                <a href="/network" class="nav-link active">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Network Info</span>
+                </a>
+                <span class="nav-student">Student Number: 39131218</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-network-wired"></i> Network Information</h1>
+            <p>Access your UWB Light Control system from any device on the network</p>
+        </div>
+
+        <div class="network-status">
+            <div class="status-indicator" id="networkStatus"></div>
+            <div>
+                <strong style="color: white;">Network Status:</strong>
+                <span id="networkStatusText" style="color: rgba(255, 255, 255, 0.9);">Checking...</span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- System Status Card -->
+            <div class="card">
+                <h3><i class="fas fa-server"></i> System Status</h3>
+                <div class="status-item">
+                    <span class="status-label">UWB Connection</span>
+                    <span class="status-value" id="uwbStatus">Checking...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">DMX Output</span>
+                    <span class="status-value" id="dmxStatus">Checking...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Calibration Status</span>
+                    <span class="status-value" id="calibrationStatus">Checking...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Memory Usage</span>
+                    <span class="status-value" id="memoryStatus">Checking...</span>
+                </div>
+            </div>
+
+            <!-- Network Access Card -->
+            <div class="card">
+                <h3><i class="fas fa-wifi"></i> Network Access</h3>
+                <div class="url-list">
+                    <div class="url-item">
+                        <div class="url-title">
+                            <i class="fas fa-home"></i>
+                            Main Interface
+                        </div>
+                        <a href="/" class="url-link" id="mainUrl">Loading...</a>
+                        <div class="url-description">Primary UWB tracking and light control interface</div>
+                    </div>
+                    <div class="url-item">
+                        <div class="url-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Calibration
+                        </div>
+                        <a href="/calibration" class="url-link" id="calibrationUrl">Loading...</a>
+                        <div class="url-description">Advanced calibration and configuration tools</div>
+                    </div>
+                    <div class="url-item">
+                        <div class="url-title">
+                            <i class="fas fa-network-wired"></i>
+                            Network Info
+                        </div>
+                        <a href="/network" class="url-link" id="networkUrl">Loading...</a>
+                        <div class="url-description">This page - network access information</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Card -->
+        <div class="card">
+            <h3><i class="fas fa-qrcode"></i> Quick Access QR Codes</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                <div class="qr-code">
+                    <h4>Main Interface</h4>
+                    <div id="mainQR"></div>
+                    <p>Scan to access main interface</p>
+                </div>
+                <div class="qr-code">
+                    <h4>Calibration</h4>
+                    <div id="calibrationQR"></div>
+                    <p>Scan to access calibration</p>
+                </div>
+            </div>
+            <div class="btn-group" style="justify-content: center; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="refreshNetworkInfo()">
+                    <i class="fas fa-sync"></i> Refresh Network Info
+                </button>
+                <button class="btn btn-success" onclick="copyAllUrls()">
+                    <i class="fas fa-copy"></i> Copy All URLs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Server configuration - auto-detect server IP
+        let serverIP = window.location.hostname;
+        let serverPort = window.location.port || '5050';
+
+        async function initializeServer() {
+            try {
+                // Try to get server info from API
+                const response = await fetch('/api/serverinfo');
+                const data = await response.json();
+                serverIP = data.ip;
+                serverPort = data.port;
+                console.log(`Server detected at ${serverIP}:${serverPort}`);
+            } catch (err) {
+                console.error('Failed to get server info, using current hostname:', err);
+                serverIP = window.location.hostname;
+                serverPort = window.location.port || '5050';
+            }
+            updateNetworkInfo();
+            checkSystemStatus();
+        }
+
+        function updateNetworkInfo() {
+            // Update URLs with current server info
+            document.getElementById('mainUrl').textContent = `http://${serverIP}:${serverPort}`;
+            document.getElementById('calibrationUrl').textContent = `http://${serverIP}:${serverPort}/calibration`;
+            document.getElementById('networkUrl').textContent = `http://${serverIP}:${serverPort}/network`;
+            
+            // Generate QR codes
+            generateQRCode('mainQR', `http://${serverIP}:${serverPort}`);
+            generateQRCode('calibrationQR', `http://${serverIP}:${serverPort}/calibration`);
+        }
+
+        async function checkSystemStatus() {
+            try {
+                // Check system status
+                const statusResponse = await fetch('/api/status');
+                const statusData = await statusResponse.json();
+                
+                // UWB Status - check if connected and has recent data
+                const uwbConnected = statusData.uwb_connected && statusData.has_recent_data;
+                document.getElementById('uwbStatus').textContent = uwbConnected ? 'Connected' : 'Disconnected';
+                document.getElementById('uwbStatus').className = uwbConnected ? 'status-value success' : 'status-value error';
+                
+                // DMX Status
+                document.getElementById('dmxStatus').textContent = statusData.dmx_active ? 'Active' : 'Inactive';
+                document.getElementById('dmxStatus').className = statusData.dmx_active ? 'status-value success' : 'status-value warning';
+                
+                // Calibration Status
+                document.getElementById('calibrationStatus').textContent = statusData.calibration_loaded ? 'Loaded' : 'Not Loaded';
+                document.getElementById('calibrationStatus').className = statusData.calibration_loaded ? 'status-value success' : 'status-value warning';
+                
+                // Update network status
+                document.getElementById('networkStatusText').textContent = 'Online';
+                document.getElementById('networkStatus').className = 'status-indicator';
+                
+            } catch (err) {
+                console.error('Failed to check system status:', err);
+                document.getElementById('uwbStatus').textContent = 'Error';
+                document.getElementById('uwbStatus').className = 'status-value error';
+                document.getElementById('dmxStatus').textContent = 'Error';
+                document.getElementById('dmxStatus').className = 'status-value error';
+                document.getElementById('calibrationStatus').textContent = 'Error';
+                document.getElementById('calibrationStatus').className = 'status-value error';
+                
+                document.getElementById('networkStatusText').textContent = 'Offline';
+                document.getElementById('networkStatus').className = 'status-indicator error';
+            }
+
+            // Check memory status
+            try {
+                const memoryResponse = await fetch('/api/memory_status');
+                const memoryData = await memoryResponse.json();
+                if (memoryData.memory_usage_mb) {
+                    const memoryPercent = Math.round(memoryData.memory_percent);
+                    document.getElementById('memoryStatus').textContent = `${memoryPercent}%`;
+                    document.getElementById('memoryStatus').className = memoryPercent > 80 ? 'status-value warning' : 'status-value success';
+                } else {
+                    document.getElementById('memoryStatus').textContent = 'Unknown';
+                    document.getElementById('memoryStatus').className = 'status-value warning';
+                }
+            } catch (err) {
+                document.getElementById('memoryStatus').textContent = 'Unknown';
+                document.getElementById('memoryStatus').className = 'status-value warning';
+            }
+        }
+
+        function generateQRCode(elementId, url) {
+            const element = document.getElementById(elementId);
+            if (typeof QRCode !== 'undefined') {
+                // Use QRCode library if available
+                QRCode.toCanvas(element, url, { width: 150 }, function (error) {
+                    if (error) {
+                        // Fallback to image service
+                        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+                        element.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width: 150px; height: 150px;">`;
+                    }
+                });
+            } else {
+                // Fallback to image service
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+                element.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width: 150px; height: 150px;">`;
+            }
+        }
+
+        function refreshNetworkInfo() {
+            showMessage('Refreshing network information...', 'info');
+            initializeServer();
+        }
+
+        function copyAllUrls() {
+            const urls = [
+                `Main Interface: http://${serverIP}:${serverPort}`,
+                `Calibration: http://${serverIP}:${serverPort}/calibration`,
+                `Network Info: http://${serverIP}:${serverPort}/network`
+            ].join('\n');
+            
+            navigator.clipboard.writeText(urls).then(() => {
+                showMessage('All URLs copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = urls;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('All URLs copied to clipboard!', 'success');
+            });
+        }
+
+        function showMessage(message, type) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = message;
+            msgEl.className = `message ${type}`;
+            msgEl.classList.add('show');
+            
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initializeServer();
+        };
+    </script>
+</body>
+</html> 
